@@ -352,7 +352,7 @@
           "200": {
             "description": "OK"
           },
-          "": {
+          "requestBody": {
             "content": {
               "application/json": {
                 "schema": {

@@ -1,0 +1,772 @@
+{
+  "openapi": "3.1.0",
+  "x-stoplight": {
+    "id": "fujnbyka3et49"
+  },
+  "info": {
+    "title": "PSO Activity Services",
+    "version": "1.0",
+    "summary": "Various PSO Services",
+    "description": "Provides various endpoints to simplify payloads required for PSO integration. All endpoints provide the ability to simply generate the payload rather than directly sending the payload the Scheduling Input Manager. Some endpoints however do require authentication (such as the manual schedule) as a GET request is made to PSO to gather additional parameter values.\n\nValidation is done at the server level to disallow PSO base URLs that include any variation of 'PROD', 'PRD' and 'PD' in the strings.",
+    "contact": {
+      "name": "Ismail Dawoodjee",
+      "email": "idawoodjee@goghsolutions.com",
+      "url": "http://www.goghsolutions.com"
+    },
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://thetechnodro.me:666",
+      "description": "The Technodrome @Ish"
+    }
+  ],
+  "paths": {
+    "/api/activity": {
+      "post": {
+        "summary": "Quick Generate Activity",
+        "operationId": "post-api-activity",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "202 Response": {
+                    "value": {
+                      "status": 202,
+                      "description": "Payload not sent to PSO",
+                      "original_payload": [
+                        {
+                          "dsScheduleData": {
+                            "@xmlns": "http://360Scheduling.com/Schema/dsScheduleData.xsd",
+                            "Input_Reference": {
+                              "datetime": "2022-11-10T12:59:38+00:00",
+                              "id": "97b622742494421aaedee2a8f3a340f4",
+                              "description": "Instant Activity Generator from the thingy",
+                              "input_type": "CHANGE",
+                              "organisation_id": "2",
+                              "dataset_id": "W&C Prod"
+                            },
+                            "Activity": {
+                              "id": "97b62274247348db8ef0d00c073b8542",
+                              "activity_class_id": "CALL",
+                              "activity_type_id": "Standard Install",
+                              "location_id": "97b62274247348db8ef0d00c073b8542",
+                              "priority": 1,
+                              "description": "Appointment Request",
+                              "date_time_created": "2022-11-10T12:59:38+00:00",
+                              "date_time_open": "2022-11-10T12:59:38+00:00",
+                              "base_value": 1000
+                            },
+                            "Activity_Skill": [],
+                            "Activity_SLA": {
+                              "activity_id": "97b62274247348db8ef0d00c073b8542",
+                              "sla_type_id": "Primary SLA",
+                              "datetime_start": "2022-11-11T08:00:00",
+                              "datetime_end": "2022-11-11T16:00:00",
+                              "priority": 2,
+                              "start_based": true
+                            },
+                            "Activity_Status": {
+                              "activity_id": "97b62274247348db8ef0d00c073b8542",
+                              "status_id": 0,
+                              "date_time_status": "2022-11-10T12:59:38+00:00",
+                              "visit_id": 1,
+                              "fixed": false,
+                              "date_time_stamp": "2022-11-10T12:59:38+00:00",
+                              "duration": "PT0H45M"
+                            },
+                            "Location": {
+                              "id": "97b62274247348db8ef0d00c073b8542",
+                              "latitude": 43.46436508701477,
+                              "longitude": -112.0151605
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Quickly generate an activity with minimimal input. With just 6 attributes and credentials an activity can be sent to PSO.\n\nThe body parameters relative_day and relative_day_end are integers to define the SLA window. For example 0 is current day, 1 is tomorrow and so on. If relative_day_end is not included, then a window_size value needs be included to represent an appointment window within a single day.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "activity_type_id": "Standard Install",
+                    "dataset_id": "W&C Prod",
+                    "time_zone": 5,
+                    "duration": 45,
+                    "sla_type_id": "Primary SLA",
+                    "lat": 43.46436508701477,
+                    "long": -112.0151605,
+                    "send_to_pso": false,
+                    "account_id": "Default",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!",
+                    "base_url": "https://thetechnodro.me:950"
+                  }
+                },
+                "properties": {
+                  "activity_type_id": {
+                    "type": "string"
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "sla_type_id": {
+                    "type": "string"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "multipleOf": 1,
+                    "example": 60
+                  },
+                  "lat": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                  },
+                  "long": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "relative_day": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "multipleOf": 1,
+                    "default": 1,
+                    "description": "Defaults to 1 (tomorrow 8am)"
+                  },
+                  "relative_day_end": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "multipleOf": 1,
+                    "default": 0,
+                    "description": "Cannot be included if window_size is present. Defaults to value of relative_day+8hrs."
+                  },
+                  "window_size": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "cannot be included if relative_day_end is present",
+                    "enum": [
+                      0,
+                      3,
+                      4
+                    ]
+                  },
+                  "time_zone": {
+                    "type": "integer",
+                    "minimum": -24,
+                    "maximum": 24,
+                    "description": "integer representing offset (+/-) from UTC/GMT"
+                  },
+                  "activity_id": {
+                    "type": "string",
+                    "description": "if not included, a GUID will be generated"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "skill": {
+                    "type": "array",
+                    "description": "add an array of skills",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "region": {
+                    "type": "array",
+                    "description": "add an array of regions",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "activity_type_id",
+                  "dataset_id",
+                  "sla_type_id",
+                  "duration",
+                  "lat",
+                  "long"
+                ]
+              },
+              "examples": {
+                "Minimal Input": {
+                  "value": {
+                    "activity_type_id": "Standard Install",
+                    "dataset_id": "dataset_id",
+                    "duration": 45,
+                    "sla_type_id": "Primary SLA",
+                    "lat": 43.46436508701477,
+                    "long": -112.0151605
+                  }
+                },
+                "All Optional Fields": {
+                  "value": {
+                    "activity_type_id": "Standard Job",
+                    "dataset_id": "Cool Dataset",
+                    "sla_type_id": "Primary SLA",
+                    "duration": 45,
+                    "lat": 43.46436508701477,
+                    "long": -112.0151605,
+                    "relative_day": 2,
+                    "window_size": 3,
+                    "time_zone": -5
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "description": "required",
+            "required": true
+          }
+        ]
+      },
+      "parameters": [],
+      "delete": {
+        "summary": "Delete Multiple Activities",
+        "operationId": "delete-api-activity",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Accepts an array of activities. No validation is done to check for the existance of the activities.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "activities": {
+                    "type": "array",
+                    "x-stoplight": {
+                      "id": "2y9z7r6laxcm6"
+                    },
+                    "minItems": 1,
+                    "items": {
+                      "x-stoplight": {
+                        "id": "b0iq3m9awtxrn"
+                      },
+                      "type": "string"
+                    }
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  }
+                },
+                "required": [
+                  "activities",
+                  "dataset_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/activity/{activity_id}": {
+      "delete": {
+        "summary": "Delete Activity",
+        "operationId": "delete-api-activity",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "Standard Response": {
+                    "value": {
+                      "status": 200,
+                      "description": "Payload successfully sent to PSO.",
+                      "original_payload": [
+                        {
+                          "dsScheduleData": {
+                            "@xmlns": "http://360Scheduling.com/Schema/dsScheduleData.xsd",
+                            "Input_Reference": {
+                              "datetime": "2022-11-11T21:38:22+00:00",
+                              "id": "97b8def27c2b4efba620b3179519de39",
+                              "description": "Deleting Activity from the thingy",
+                              "input_type": "CHANGE",
+                              "organisation_id": "2",
+                              "dataset_id": "W&C Prod"
+                            },
+                            "Object_Deletion": {
+                              "object_type_id": "Activity",
+                              "object_pk_name1": "id",
+                              "object_pk1": "97b8de8318904a37a9bec4c980c05198"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "username": "admin",
+                    "send_to_pso": true,
+                    "dataset_id": "W&C Prod",
+                    "password": "Ohyouthinkdarknessisyourally1!",
+                    "account_id": "Default",
+                    "base_url": "https://thetechnodro.me:950"
+                  }
+                },
+                "properties": {
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  }
+                },
+                "required": [
+                  "dataset_id"
+                ]
+              },
+              "examples": {
+                "Only Example": {
+                  "value": {
+                    "username": "myusername",
+                    "send_to_pso": true,
+                    "dataset_id": "MY_DatasetID",
+                    "password": "usingapassphraseisagoodidea",
+                    "account_id": "Default",
+                    "base_url": "https://thetechnodro.me:950"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Quickly delete an activity"
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "activity_id",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Activity ID"
+        }
+      ]
+    },
+    "/api/activity/{activity_id}/{status}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "activity_id",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Activity"
+        },
+        {
+          "schema": {
+            "type": "string",
+            "enum": [
+              "ignore",
+              "unallocated",
+              "committed",
+              "sent",
+              "downloaded",
+              "accepted",
+              "travelling",
+              "waiting",
+              "onsite",
+              "pendingcompletion",
+              "visitcomplete",
+              "completed",
+              "incomplete"
+            ]
+          },
+          "name": "status",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Status (see below)"
+        }
+      ],
+      "patch": {
+        "summary": "Update Activity Status",
+        "operationId": "patch-api-activity-activity_id-status",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "Accept"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "send_to_pso": true,
+                    "dataset_id": "W&C Prod",
+                    "account_id": "Default",
+                    "date_time_fixed": "2022-10-21T21:04:21+00:00",
+                    "resource_id": "my dude",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!"
+                  }
+                },
+                "properties": {
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "date_time_fixed": {
+                    "type": "string",
+                    "description": "required if status is not unallocated or ignore",
+                    "format": "date-time"
+                  },
+                  "resource_id": {
+                    "type": "string",
+                    "description": "required if status is not unallocated or ignore"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  }
+                },
+                "required": [
+                  "dataset_id"
+                ]
+              },
+              "examples": {
+                "Simple Not Sent to PSO unallocated": {
+                  "value": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dataset_id": "dataset_id"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Simplifies the status update of an Activity in PSO. Statuses must be the lowercase space removed version of the description value of a PSO status. The accepted values are 'ignore', 'committed', 'sent', 'unallocated', 'downloaded', 'accepted', 'waiting', 'travelling', 'onsite', 'pendingcompletion', 'visitcomplete', 'completed', 'incomplete' and are supplied as a path parameter.\n\nBody parameters including the resource_id and a date_time_fixed value are required if the status is other than ignore or unallocated."
+      }
+    },
+    "/api/activity/{activity_id}/sla": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "activity_id",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Activity ID"
+        }
+      ],
+      "delete": {
+        "summary": "Delete Activity SLA",
+        "operationId": "delete-api-activity-activity_id-sla",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "description": "Simplifies sending an Object_Deletion to PSO for Activity SLAs.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "send_to_pso": false,
+                    "dataset_id": "W&C Prod",
+                    "sla_type_id": "Primary SLA",
+                    "start_based": true,
+                    "username": "user",
+                    "password": "pass",
+                    "token": "token",
+                    "account_id": "account"
+                  }
+                },
+                "properties": {
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "sla_type_id": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "start_based": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  }
+                },
+                "required": [
+                  "dataset_id",
+                  "sla_type_id"
+                ]
+              },
+              "examples": {
+                "Simple Not Sent to PSO": {
+                  "value": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dataset_id": "dataset_id",
+                    "sla_type_id": "Primary SLA"
+                  }
+                },
+                "Complex Sent to PSO": {
+                  "value": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "send_to_pso": true,
+                    "dataset_id": "dataset_id",
+                    "sla_type_id": "Primary SLA",
+                    "start_based": false,
+                    "token": "a8783283e93d48499d364a1ffb805891Standard",
+                    "account_id": "Default"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "Accept",
+            "description": "application/json"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "description": "application/json",
+            "required": true
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "tags": [
+    {
+      "name": "delete"
+    },
+    {
+      "name": "exception"
+    },
+    {
+      "name": "init"
+    },
+    {
+      "name": "initialize"
+    },
+    {
+      "name": "load"
+    },
+    {
+      "name": "resource"
+    },
+    {
+      "name": "resource_event"
+    },
+    {
+      "name": "rota"
+    },
+    {
+      "name": "unavailability"
+    }
+  ]
+}

@@ -349,10 +349,10 @@
         "summary": "Delete Activity",
         "operationId": "delete-api-activity",
         "responses": {
+          
           "200": {
-            "description": "OK"
-          },
-          "requestBody": {
+                        "description": "OK",
+
             "content": {
               "application/json": {
                 "schema": {

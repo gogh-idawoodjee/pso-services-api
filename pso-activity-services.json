@@ -39,7 +39,17 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                      "status": {
+                        "type": "integer"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "original_payload":{
+                        "type":"object"
+                      }
+                  }
                 },
                 "examples": {
                   "202 Response": {
@@ -743,6 +753,9 @@
   "tags": [
     {
       "name": "delete"
+    },
+    {
+      "name": "description"
     },
     {
       "name": "exception"

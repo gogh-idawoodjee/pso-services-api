@@ -1,0 +1,622 @@
+{
+  "openapi": "3.1.0",
+  "x-stoplight": {
+    "id": "inaaxai7zekag"
+  },
+  "info": {
+    "title": "PSO General Services",
+    "version": "1.0",
+    "summary": "Various PSO Services",
+    "description": "Provides various endpoints to simplify payloads required for PSO integration. Most endpoints provide the ability to simply generate the payload rather than directly sending the payload the Scheduling Input Manager. Some endpoints however do require authentication as a GET request is made to PSO to gather additional parameter values.\n\nValidation is done at the server level to disallow PSO base URLs that include any variation of 'PROD', 'PRD' and 'PD' in the strings.",
+    "contact": {
+      "name": "Ismail Dawoodjee",
+      "email": "idawoodjee@goghsolutions.com",
+      "url": "http://www.goghsolutions.com"
+    },
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://thetechnodro.me:666",
+      "description": "The Technodrome @Ish"
+    }
+  ],
+  "paths": {
+    "/api/load": {
+      "post": {
+        "summary": "Initialize PSO",
+        "operationId": "post-api-load",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "application/json"
+            },
+            "in": "header",
+            "name": "Accept",
+            "description": "application/json"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "description": "application/json",
+            "name": "Content-Type",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dse_duration": 9,
+                    "dataset_id": "W&C Prod",
+                    "description": "Xmas Time Baby!",
+                    "send_to_pso": true,
+                    "account_id": "Default",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!"
+                  }
+                },
+                "properties": {
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "dse_duration": {
+                    "type": "integer"
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "rota_id": {
+                    "type": "string",
+                    "description": "if not provided, assumed to be same as dataset_id"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "required if keep_pso_data = true"
+                  },
+                  "keep_pso_data": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "if set to true, existing Activities and activity child objects will be included"
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true; valid account_id (typically 'Default' for non-cloud envrionments')"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and user/pass are null"
+                  },
+                  "appointment_window": {
+                    "type": "integer"
+                  },
+                  "process_type": {
+                    "description": "Not case sensitive.",
+                    "default": "APPOINTMENT",
+                    "type": "string",
+                    "enum": [
+                      "DYNAMIC",
+                      "APPOINTMENT",
+                      "REACTIVE",
+                      "STATIC"
+                    ]
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "format": "date",
+                    "default": "CURRENT_DATETIME",
+                    "example": "2022-10-31T19:54:58"
+                  },
+                  "include_broadcast": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "broadcast_type": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 32,
+                    "multipleOf": 1,
+                    "description": "required if include_broadcast = true"
+                  },
+                  "broadcast_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "required if include_broadcast = true"
+                  }
+                },
+                "required": [
+                  "base_url",
+                  "dse_duration",
+                  "dataset_id"
+                ]
+              },
+              "examples": {
+                "Minimum - Not Sent to PSO": {
+                  "value": {
+                    "base_url": "http://thetechnodro.me",
+                    "dse_duration": 7,
+                    "dataset_id": "dataset_id"
+                  }
+                },
+                "Complex - Sent to PSO": {
+                  "value": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dse_duration": 5,
+                    "dataset_id": "dataset_id",
+                    "rota_id": "MYROTA_ID",
+                    "description": "Check for this in the audit",
+                    "send_to_pso": true,
+                    "account_id": "Default",
+                    "token": "8ded9f92c4164c04bb579a8f278cff68Standard",
+                    "appointment_window": 25,
+                    "process_type": "APPOINTMENT",
+                    "datetime": "2022-10-21T21:04:21"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Simplifies building an initial load. Note, if sending to PSO be aware this will clear any scheduling data (activities, schedule events, etc) from the scheduling dataset. \n\nUsing the keep_pso_data attribute set to true will re-load Activity, Activity_Status, Activity_Skill, Location, Location_Region, Schedule_Event, and Schedule_Exception_Response objects. "
+      }
+    },
+    "/api/rotatodse": {
+      "parameters": [],
+      "patch": {
+        "summary": "Send Rota to DSE",
+        "operationId": "patch-api-rotatodse",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "description": "application/json",
+            "name": "Content-Type",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "description": "application/json",
+            "name": "Accept"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dataset_id": "W&C Prod",
+                    "description": "Xmas Time Baby!",
+                    "send_to_pso": true,
+                    "account_id": "Default",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!"
+                  }
+                },
+                "properties": {
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "account_id": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "default": "CURRENT_DATETIME"
+                  },
+                  "rota_id": {
+                    "type": "string",
+                    "description": "if not provided, assumed to be same as dataset_id"
+                  }
+                },
+                "required": [
+                  "base_url",
+                  "dataset_id"
+                ]
+              },
+              "examples": {
+                "Minimal Not Sent to PSO": {
+                  "value": {
+                    "base_url": "http://thetechnodro.me",
+                    "dataset_id": "dataset_id"
+                  }
+                },
+                "Complex Sent to PSO": {
+                  "value": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "dataset_id": "dataset_id",
+                    "description": "Updating Rota",
+                    "send_to_pso": true,
+                    "account_id": "Default",
+                    "token": "49902a8b59aa46528904e8e4a0d6c3d8Standard",
+                    "datetime": "2022-11-01T14:10:06",
+                    "rota_id": "MYROTA_ID"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Simplifies sending updated Rota Data to DSE. "
+      }
+    },
+    "/api/usage": {
+      "get": {
+        "summary": "Get System Usage",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "COOL_DATASET": {
+                        "Resource_Count": [
+                          {
+                            "date": "2022-11-01T15:18:21.68+00:00",
+                            "count": 5
+                          },
+                          {
+                            "date": "2022-11-01T17:00:39.227+00:00",
+                            "count": 385
+                          }
+                        ],
+                        "Activity_Count": [
+                          {
+                            "date": "2022-11-01T15:18:21.68+00:00",
+                            "count": 22454
+                          },
+                          {
+                            "date": "2022-11-01T17:00:39.263+00:00",
+                            "count": 22454
+                          }
+                        ],
+                        "Dataset_Count": [
+                          {
+                            "date": "2022-11-01T15:18:21.68+00:00",
+                            "count": 3
+                          },
+                          {
+                            "date": "2022-11-01T17:00:39.36+00:00",
+                            "count": 3
+                          }
+                        ],
+                        "DSE_Window": [
+                          {
+                            "date": "2022-11-01T15:18:21.68+00:00",
+                            "count": 5
+                          },
+                          {
+                            "date": "2022-11-01T17:00:39.477+00:00",
+                            "count": 5
+                          }
+                        ],
+                        "ABE_Window": [
+                          {
+                            "date": "2022-11-01T15:18:21.683+00:00",
+                            "count": 75
+                          },
+                          {
+                            "date": "2022-11-01T17:00:39.53+00:00",
+                            "count": 75
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "properties": {
+                    "Dataset ID": {
+                      "type": "object",
+                      "properties": {
+                        "Resource_Count": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "Activity_Count": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "Dataset_Count": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "DSE_Window": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "ABE_Window": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Simple Example": {
+                    "value": {
+                      "status": 200,
+                      "description": "Usage Data",
+                      "usage_data": [
+                        {
+                          "dataset_id": {
+                            "Resource_Count": [
+                              {
+                                "date": "Fri, Nov 4, 2022 3:22 PM",
+                                "count": 380
+                              }
+                            ],
+                            "Activity_Count": [
+                              {
+                                "date": "Fri, Nov 4, 2022 3:22 PM",
+                                "count": 2080
+                              }
+                            ],
+                            "Dataset_Count": [
+                              {
+                                "date": "Fri, Nov 4, 2022 3:22 PM",
+                                "count": 1
+                              }
+                            ],
+                            "DSE_Window": [
+                              {
+                                "date": "Fri, Nov 4, 2022 3:22 PM",
+                                "count": 7
+                              }
+                            ],
+                            "ABE_Window": [
+                              {
+                                "date": "Fri, Nov 4, 2022 3:22 PM",
+                                "count": 75
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-api-usage",
+        "description": "Cleaned up version of /IFSSchedulingRESTfulGateway/api/v1/scheduling/usage. Makes finding what you're looking for a bit easier. \n\nIf mindate and maxdate are not provided they are considered to be today and tomorrow respectively. \n\nFor security due to the fact this is an HTTP GET request, a token must be supplied in place of a user/pass combination.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Accept",
+            "required": true,
+            "description": "Accept Type"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "//prod|prd/i/"
+            },
+            "in": "query",
+            "name": "base_url",
+            "required": true,
+            "description": "base destination URL"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "dataset_id",
+            "required": true,
+            "description": "valid PSO Dataset ID"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "account_id",
+            "required": true,
+            "description": "valid account_id (typically 'Default' for non-cloud envrionments'"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "token",
+            "description": "Required",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "name": "mindate",
+            "description": "optional minium date"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "name": "maxdate",
+            "description": "optional maximum date"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "tags": [
+    {
+      "name": "delete"
+    },
+    {
+      "name": "exception"
+    },
+    {
+      "name": "init"
+    },
+    {
+      "name": "initialize"
+    },
+    {
+      "name": "load"
+    },
+    {
+      "name": "resource"
+    },
+    {
+      "name": "resource_event"
+    },
+    {
+      "name": "rota"
+    },
+    {
+      "name": "unavailability"
+    }
+  ]
+}

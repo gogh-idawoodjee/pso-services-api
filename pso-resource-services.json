@@ -1,0 +1,963 @@
+{
+  "openapi": "3.1.0",
+  "x-stoplight": {
+    "id": "k12eg4wmzvci2"
+  },
+  "info": {
+    "title": "PSO Resource Services",
+    "version": "1.0",
+    "summary": "Various PSO Services",
+    "description": "Provides various endpoints to simplify payloads required for PSO integration. All endpoints provide the ability to simply generate the payload rather than directly sending the payload the Scheduling Input Manager. Some endpoints however do require authentication (such as the manual schedule) as a GET request is made to PSO to gather additional parameter values.\n\nValidation is done at the server level to disallow PSO base URLs that include any variation of 'PROD', 'PRD' and 'PD' in the strings.",
+    "contact": {
+      "name": "Ismail Dawoodjee",
+      "email": "idawoodjee@goghsolutions.com",
+      "url": "http://www.goghsolutions.com"
+    },
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://thetechnodro.me:666",
+      "description": "The Technodrome @Ish"
+    }
+  ],
+  "paths": {
+    "/api/resource/{resource_id}/event": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "name": "resource_id",
+          "in": "path",
+          "required": true,
+          "description": "valid PSO resource ID"
+        }
+      ],
+      "post": {
+        "summary": "Create Resource Event",
+        "operationId": "post-api-resource-resource_id-event",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "description": "application/json",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "Accept",
+            "description": "application/json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "event_type": "AF",
+                    "dataset_id": "W&C Prod",
+                    "base_url": "https://thetechnodro.me:950"
+                  }
+                },
+                "properties": {
+                  "event_type": {
+                    "type": "string",
+                    "enum": [
+                      "AO",
+                      "AF",
+                      "BO",
+                      "BF",
+                      "CE",
+                      "FIX",
+                      "RO",
+                      "RF"
+                    ]
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "lat": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90,
+                    "description": "required if event_type = FIX"
+                  },
+                  "long": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "required if event_type = FIX"
+                  },
+                  "event_date_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "defaults to now() if not supplied"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true; valid account_id (typically 'Default' for non-cloud envrionments')"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null",
+                    "example": "f82d6850bad74cb4b40bc32fcd1103a4Standard"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  }
+                },
+                "required": [
+                  "event_type",
+                  "dataset_id",
+                  "base_url"
+                ]
+              },
+              "examples": {
+                "Minimum - Not Sent to PSO": {
+                  "value": {
+                    "event_type": "AF",
+                    "dataset_id": "dataset_id",
+                    "base_url": "https://thetechnodro.me:950"
+                  }
+                },
+                "Send with Token": {
+                  "value": {
+                    "event_type": "AO",
+                    "dataset_id": "Cool Datset Bruh",
+                    "base_url": "http://thetechnodro.me:950",
+                    "account_id": "Default",
+                    "send_to_pso": true,
+                    "token": "f82d6850bad74cb4b40bc32fcd1103a4Standard"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Used to generate a Schedule_Event object. Only the following event_type values are accepted: AO,AF,BO,BF,CE,FIX,RO,RF. \nA valid lat and long value is required if the event_type is set to FIX.\n\nBy default, the send_to_pso parameter is set to false and the event will not be created in PSO. A valid token or username and password combination along with account_id is required in order for the API to post the details to PSO.  \n\nSetting send_to_pso to true will create the event and send the updated rota to the DSE (Rota Update)."
+      }
+    },
+    "/api/resource/{resource_id}/unavailability": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "resource_id",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Scheduling Resource"
+        }
+      ],
+      "post": {
+        "summary": "Create Resource Unavailability",
+        "operationId": "post-api-resource-resource_id-unavailability",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "category_id": "AF",
+                    "base_url": "https://thetechnodro.me:950",
+                    "base_time": "03-10-2020T15:36",
+                    "duration": 9,
+                    "time_zone": -5,
+                    "dataset_id": "W&C Prod",
+                    "description": "Xmas Time Baby!"
+                  }
+                },
+                "properties": {
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 24,
+                    "multipleOf": 1,
+                    "description": "number of hours the unavailabilty spans"
+                  },
+                  "category_id": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "description": "this value must exist in the ARP (resource data / unavailabilty categories)"
+                  },
+                  "base_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "the start time of the unavailablity"
+                  },
+                  "time_zone": {
+                    "type": "integer",
+                    "minimum": -24,
+                    "maximum": 24,
+                    "multipleOf": 1
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "additional detail about the unavailability"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  }
+                },
+                "required": [
+                  "dataset_id",
+                  "duration",
+                  "category_id",
+                  "base_time"
+                ]
+              },
+              "examples": {
+                "Simple Not Sent to PSO": {
+                  "value": {
+                    "dataset_id": "dataset_id",
+                    "duration": 5,
+                    "category_id": "My Dude is Sick",
+                    "base_time": "2019-08-24T14:15"
+                  }
+                },
+                "Complex Sent to PSO": {
+                  "value": {
+                    "dataset_id": "dataset_id",
+                    "duration": 5,
+                    "category_id": "My Dude is Sick",
+                    "base_time": "2019-08-24T14:15",
+                    "send_to_pso": true,
+                    "base_url": "https://thetechnodro.me",
+                    "time_zone": -5,
+                    "token": "a8783283e93d48499d364a1ffb805891Standard"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Simplifies creating an unavailability for the resource specified in the path parameter. Sending to PSO will trigger a rota to DSE (Rota Update).\n\nAt the moment there is no support for unavailabilities greater than 24hours or recurring patterns.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "application/json"
+            },
+            "in": "header",
+            "name": "Accept",
+            "description": "Accept is Optional"
+          }
+        ]
+      }
+    },
+    "/api/unavailability/{unavailability_id}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "example": "a8b9ee306c1a460db60047f3caed2e03"
+          },
+          "name": "unavailability_id",
+          "in": "path",
+          "required": true,
+          "description": "valid RAM_Unavailability id value"
+        }
+      ],
+      "delete": {
+        "summary": "Delete Unavailability",
+        "operationId": "delete-api-unavailability-unavailability_id-delete",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "required": true,
+            "description": "required"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "application/jso"
+            },
+            "in": "header",
+            "name": "Accept",
+            "description": "accept is optional"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "send_to_pso": true,
+                    "rota_id": "W&C Prod",
+                    "dataset_id": "W&C Prod",
+                    "account_id": "Default",
+                    "token": "token",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!"
+                  }
+                },
+                "properties": {
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "send_to_pso": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "rota_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true to ensure Rota is sent to DSE"
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and username and password are null"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if send_to_pso = true and token is null"
+                  }
+                },
+                "required": [
+                  "dataset_id"
+                ]
+              },
+              "examples": {
+                "Simple not sent to PSO": {
+                  "value": {
+                    "dataset_id": "dataset_id"
+                  }
+                },
+                "Still Simple, but sent to PSO": {
+                  "value": {
+                    "dataset_id": "dataset_id",
+                    "base_url": "http://thetechnodro.me",
+                    "send_to_pso": true,
+                    "rota_id": "MYROTA_ID",
+                    "account_id": "Default",
+                    "token": "letoken9ee306c1a460db60047f"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Simplifies the deletion of a single unavailability. All that's needed is the ID in the URL and the dataset in the Body."
+      },
+      "patch": {
+        "summary": "Update Unavailability or Unavailabilities",
+        "operationId": "patch-api-unavailability-unavailability_id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Allows for an update of a single unavaililty as passed in the path parameter or multiple availabilities combining the path param and body param unavailabilities. \n\nThis endpoint requires authentication as a lookup is done to gather details for the individual unavailabilities and will validate if the unavailabilities provided actually exist in the scheduling dataset. \n\nThe API will always gather the resource IDs for the unavailabilities provided. The remaining parameters are optional. If not provided, they will be taken from the first valid unavailability provided in the list. ",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "base_url": "https://thetechnodro.me:950",
+                    "base_time": "2022-10-10T15:36",
+                    "duration": 9,
+                    "time_zone": -5,
+                    "unavailabilities": [
+                      "6273baa25a03411ec84cadd1e357d0cb",
+                      "0bc19f70ba224aaacc62e1430a8e8d12"
+                    ],
+                    "send_to_pso": true,
+                    "rota_id": "W&C Prod",
+                    "dataset_id": "W&C Prod",
+                    "account_id": "Default",
+                    "username": "admin",
+                    "password": "Ohyouthinkdarknessisyourally1!"
+                  }
+                },
+                "properties": {
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "rota_id": {
+                    "type": "string"
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "account_id": {
+                    "type": "string"
+                  },
+                  "base_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "unavailabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "duration": {
+                    "type": "integer"
+                  },
+                  "time_zone": {
+                    "type": "integer",
+                    "minimum": -24,
+                    "maximum": 24,
+                    "multipleOf": 1
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "category_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "base_url",
+                  "rota_id",
+                  "dataset_id",
+                  "account_id"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/resource/{resource_id}/shift": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "name": "resource_id",
+          "in": "path",
+          "required": true,
+          "description": "valid PSO resource ID"
+        }
+      ],
+      "patch": {
+        "summary": "Update Shift",
+        "operationId": "patchapi-resource-resource_id-manualschedule",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "200 Successful Post": {
+                    "value": {
+                      "status": 200,
+                      "description": "Payload successfully sent to PSO. Rota Item Updated",
+                      "original_payload": [
+                        {
+                          "DsModelling": {
+                            "@xmlns": "http://360Scheduling.com/Schema/DsModelling.xsd",
+                            "RAM_Update": {
+                              "organisation_id": "2",
+                              "dataset_id": "Dataset ID",
+                              "user_id": "the thingy user",
+                              "ram_update_type_id": "CHANGE",
+                              "is_master_data": true,
+                              "description": "Manual Scheduling Only set to ON via the thingy"
+                            },
+                            "RAM_Rota_Item": {
+                              "id": "4cb447f3580c4291d125c74593901caa",
+                              "ram_rota_id": "rota_id",
+                              "manual_scheduling_only": true,
+                              "ram_resource_id": "99902",
+                              "start_datetime": "2023-01-10T08:00:00+00:00",
+                              "end_datetime": "2023-01-10T18:00:00+00:00",
+                              "ram_shift_category_id": "MANUAL",
+                              "description": "Manual Scheduling Only set to ON via the thingy. (2023-01-07 19:16:16)"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "Example 1": {
+                    "turn_manual_scheduling_on": true,
+                    "shift_id": "0268229d01a749d3708cecfab4b42ee0",
+                    "dataset_id": "W&C Prod",
+                    "rota_id": "W&C Prod",
+                    "send_to_pso": false,
+                    "shift_type": "Manual Scheduling Shift",
+                    "account_id": "Default",
+                    "base_url": "thetechnodro.me:950",
+                    "token": "a0dfbd40989b489bb36b5f8dbef3e49fStandard"
+                  }
+                },
+                "properties": {
+                  "turn_manual_scheduling_on": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "shift_id": {
+                    "type": "string",
+                    "description": "ram_rota_item.id, this is typically a guid/uuid"
+                  },
+                  "dataset_id": {
+                    "type": "string"
+                  },
+                  "account_id": {
+                    "type": "string"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "shift_type": {
+                    "type": "string",
+                    "description": "ram_shift_template_id a FK to RAM_Shift_Template. Ideally these two values would be different to help users visually distinguish shifts in the scheduling workspace. If not provided, the exising shift category willbe assumed"
+                  },
+                  "start_dattime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_datetime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "rota_id": {
+                    "type": "string",
+                    "description": "defaults to value of dataset_id if not provided",
+                    "default": "dataset_id"
+                  },
+                  "token": {
+                    "type": "string",
+                    "example": "f82d6850bad74cb4b40bc32fcd1103a4Standard",
+                    "description": "required if usename and password are null"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "required if token is null"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "required if token is null"
+                  }
+                },
+                "required": [
+                  "shift_id",
+                  "dataset_id",
+                  "account_id",
+                  "base_url"
+                ]
+              },
+              "examples": {
+                "Shift Update Sent to PSO": {
+                  "value": {
+                    "turn_manual_scheduling_on": true,
+                    "shift_id": "067908b403e24fcef82062b2609e9356",
+                    "dataset_id": "dataset_id",
+                    "rota_id": "dataset_id",
+                    "shift_type": "Manual Scheduling Shift",
+                    "account_id": "Default",
+                    "base_url": "https://thetechnodro.me:950",
+                    "token": "f82d6850bad74cb4b40bc32fcd1103a4Standard"
+                  }
+                }
+              }
+            }
+          },
+          "description": "Either a token or a combination of username and password must be provided. "
+        },
+        "description": "Used to update a specific ram_rota_item (resource shift). Users can update any or all of:\n- manual_scheduling_only\n- start_datetime\n- end_datetime\n- ram_shift_category_id (shift_type)\n\nA valid token or username and password combination is required in order for the API to gather the required components of the shift. \n\nAfter a successful transaction, the API will update the resource's shift and send the updated rota to the DSE (Rota Update) so the change is immediately recognized by the optimization process.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/json"
+              ]
+            },
+            "in": "header",
+            "name": "Content-Type",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "description": "application/json",
+            "name": "Accept"
+          }
+        ]
+      }
+    },
+    "/api/resource/{resource_id}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "resource_id",
+          "in": "path",
+          "required": true,
+          "description": "Valid PSO Resource ID"
+        }
+      ],
+      "get": {
+        "summary": "Get Resource Details",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "Full Output": {
+                    "value": {
+                      "name": "David Bowie",
+                      "resource_id": "99901",
+                      "resource_type": {
+                        "type_id": "dualfuel",
+                        "description": "Dual Fuel Operative"
+                      },
+                      "note": null,
+                      "max_travel": {
+                        "readable": "2 hours 30 minutes",
+                        "value": "PT2H30M",
+                        "source": "inherited from resource_type"
+                      },
+                      "max_travel_outside_shift_to_first_activity": {
+                        "readable": "0 seconds",
+                        "value": "PT0S",
+                        "source": "inherited from resource_type"
+                      },
+                      "max_travel_outside_shift_to_home": {
+                        "readable": "0 seconds",
+                        "value": "PT0S",
+                        "source": "inherited from resource_type"
+                      },
+                      "locations": {
+                        "start_location": [
+                          {
+                            "id": "WH1",
+                            "address": "",
+                            "city": "",
+                            "lat": "51.5322656",
+                            "long": "-0.1781295",
+                            "formatted_from_google": "5 Abbey Rd, London NW8 9AA, UK"
+                          }
+                        ],
+                        "end_location": [
+                          {
+                            "id": "WH1",
+                            "address": "",
+                            "city": "",
+                            "lat": "51.5322656",
+                            "long": "-0.1781295",
+                            "formatted_from_google": "5 Abbey Rd, London NW8 9AA, UK"
+                          }
+                        ],
+                        "start_and_end_are_same": true
+                      },
+                      "shifts": [
+                        {
+                          "id": "343d2dfe564b4009dfeed7e73537240c",
+                          "overtime_period": "PT1H",
+                          "shift_type_id": "WOT",
+                          "description": "Monday to Friday with OT",
+                          "shift_date": "Jan 9, 2023",
+                          "shift_span": "08:00 - 18:00",
+                          "shift_duration": 10,
+                          "utilization": {
+                            "percent": "0",
+                            "total_unutilised_time": "11 hours",
+                            "total_private_time": "0 seconds",
+                            "total_break_time": "0 seconds",
+                            "total_on_site_time": "0 seconds",
+                            "total_travel_time": "0 seconds",
+                            "average_travel_time": "0 seconds",
+                            "total_allocations": "0",
+                            "route_margin": "0"
+                          },
+                          "manual_scheduling_only": false
+                        },
+                        {
+                          "id": "5455650f16ea4639643ea118ded49707",
+                          "overtime_period": "PT1H",
+                          "shift_type_id": "WOT",
+                          "description": "Monday to Friday with OT",
+                          "shift_date": "Jan 11, 2023",
+                          "shift_span": "08:00 - 14:00",
+                          "shift_duration": 6,
+                          "utilization": {
+                            "percent": "0",
+                            "total_unutilised_time": "7 hours",
+                            "total_private_time": "0 seconds",
+                            "total_break_time": "0 seconds",
+                            "total_on_site_time": "0 seconds",
+                            "total_travel_time": "0 seconds",
+                            "average_travel_time": "0 seconds",
+                            "total_allocations": "0",
+                            "route_margin": "0"
+                          },
+                          "manual_scheduling_only": false
+                        },
+                        {
+                          "id": "64a0db344bb24119bfdf53aa7374bb1e",
+                          "overtime_period": "PT1H",
+                          "shift_type_id": "WOT",
+                          "description": "Monday to Friday with OT",
+                          "shift_date": "Jan 13, 2023",
+                          "shift_span": "08:00 - 18:00",
+                          "shift_duration": 10,
+                          "utilization": {
+                            "percent": "0",
+                            "total_unutilised_time": "11 hours",
+                            "total_private_time": "0 seconds",
+                            "total_break_time": "0 seconds",
+                            "total_on_site_time": "0 seconds",
+                            "total_travel_time": "0 seconds",
+                            "average_travel_time": "0 seconds",
+                            "total_allocations": "0",
+                            "route_margin": "0"
+                          },
+                          "manual_scheduling_only": false
+                        },
+                        {
+                          "id": "c7ccd9328ff74d927135679a89ac8d16",
+                          "overtime_period": "PT1H",
+                          "shift_type_id": "WOT",
+                          "description": "Monday to Friday with OT",
+                          "shift_date": "Jan 12, 2023",
+                          "shift_span": "08:00 - 18:00",
+                          "shift_duration": 10,
+                          "utilization": {
+                            "percent": "0",
+                            "total_unutilised_time": "11 hours",
+                            "total_private_time": "0 seconds",
+                            "total_break_time": "0 seconds",
+                            "total_on_site_time": "0 seconds",
+                            "total_travel_time": "0 seconds",
+                            "average_travel_time": "0 seconds",
+                            "total_allocations": "0",
+                            "route_margin": "0"
+                          },
+                          "manual_scheduling_only": false
+                        },
+                        {
+                          "id": "ea382f292af94c3696a263e2c6d9562c",
+                          "overtime_period": "PT1H",
+                          "shift_type_id": "WOT",
+                          "description": "Monday to Friday with OT",
+                          "shift_date": "Jan 10, 2023",
+                          "shift_span": "08:00 - 18:00",
+                          "shift_duration": 10,
+                          "utilization": {
+                            "percent": "0",
+                            "total_unutilised_time": "11 hours",
+                            "total_private_time": "0 seconds",
+                            "total_break_time": "0 seconds",
+                            "total_on_site_time": "0 seconds",
+                            "total_travel_time": "0 seconds",
+                            "average_travel_time": "0 seconds",
+                            "total_allocations": "0",
+                            "route_margin": "0"
+                          },
+                          "manual_scheduling_only": false
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-api-resource-resource_id",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "Accept",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "dataset_id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "account_id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "token",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "in": "query",
+            "name": "base_url",
+            "required": true
+          }
+        ],
+        "description": "Returns a formatted and readable JSON output of an individual resource. \n\nDurations are converted to their full readable format (e.g. P1H displayed as 1 hour)\n\nLocations provide a google lookup and formatted address line as well as element names matching locale (state and zip if in the USA, province and post_code if in Canada).\n\nSkills are compressed to display descriptions and their proficiencies. \n\nShifts are formatted to include relevent utilization details from the resource Plan_Route.\n\nAs this is a GET request, a token is required rather than a user/pass combo."
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  }
+}

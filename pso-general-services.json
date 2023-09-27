@@ -589,34 +589,5 @@
   "components": {
     "schemas": {},
     "securitySchemes": {}
-  },
-  "tags": [
-    {
-      "name": "delete"
-    },
-    {
-      "name": "exception"
-    },
-    {
-      "name": "init"
-    },
-    {
-      "name": "initialize"
-    },
-    {
-      "name": "load"
-    },
-    {
-      "name": "resource"
-    },
-    {
-      "name": "resource_event"
-    },
-    {
-      "name": "rota"
-    },
-    {
-      "name": "unavailability"
-    }
-  ]
+  }
 }
